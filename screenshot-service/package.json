@@ -1,0 +1,9 @@
+{
+  "name": "screenshot-service",
+  "version": "1.0.0",
+  "description": "Takes screenshots periodically",
+  "main": "capture.js",
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}

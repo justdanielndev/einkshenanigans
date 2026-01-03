@@ -1,0 +1,19 @@
+[Unit]
+Description=E-Ink Screenshot Service
+After=network.target
+
+[Service]
+Type=simple
+User=zoe
+WorkingDirectory=/Users/zoe/einkshenanigans/screenshot-service
+ExecStart=/usr/bin/node capture.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+# Uncomment and set these for your Home Assistant
+Environment=CAPTURE_URL=http://homeassistant.local:8123/lovelace/default_view?kiosk
+Environment=HA_USERNAME=eink
+Environment=HA_PASSWORD=r23rf32r32e32e
+
+[Install]
+WantedBy=multi-user.target
