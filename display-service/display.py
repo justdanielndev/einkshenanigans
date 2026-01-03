@@ -43,16 +43,21 @@ def get_image_difference_percentage(img1, img2):
     percentage = non_zero_pixels / total_pixels
     return percentage
 
-def update_display(image_path):
+def update_display(image_path, full_refresh=True):
     if epd7in5_V2 is None:
-        logging.info("Simulation: Display updated with new image.")
+        logging.info(f"Simulation: Display updated with new image. Full refresh: {full_refresh}")
         return
 
     try:
         logging.info("Initializing e-Paper...")
         epd = epd7in5_V2.EPD()
-        epd.init()
-        # epd.Clear() # Optional: Clear before drawing, might cause flashing
+        
+        if full_refresh:
+            logging.info("Mode: Full Refresh")
+            epd.init()
+        else:
+            logging.info("Mode: Partial Refresh")
+            epd.init_part()
 
         logging.info(f"Loading image: {image_path}")
         Himage = Image.open(image_path)
@@ -63,7 +68,10 @@ def update_display(image_path):
         Himage = Himage.convert('1') 
 
         logging.info("Displaying image...")
-        epd.display(epd.getbuffer(Himage))
+        if full_refresh:
+            epd.display(epd.getbuffer(Himage))
+        else:
+            epd.display_Partial(epd.getbuffer(Himage), 0, 0, epd.width, epd.height)
         
         logging.info("Sleeping display...")
         epd.sleep()
@@ -79,6 +87,7 @@ def main():
         os.makedirs(SHARED_DIR)
 
     last_update_time = 0
+    update_count = 0
     
     while True:
         try:
@@ -106,7 +115,10 @@ def main():
                     should_update = True
 
                 if should_update:
-                    update_display(IMAGE_PATH)
+                    update_count += 1
+                    # Full refresh every 3 updates (1st, 4th, 7th...)
+                    is_full_refresh = (update_count % 3 == 1)
+                    update_display(IMAGE_PATH, full_refresh=is_full_refresh)
 
                     current_image.save(PREVIOUS_IMAGE_PATH)
             
