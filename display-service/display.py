@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.DEBUG)
 SHARED_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'shared')
 IMAGE_PATH = os.path.join(SHARED_DIR, 'current_view.png')
 PREVIOUS_IMAGE_PATH = os.path.join(SHARED_DIR, 'previous_view.png')
-CHANGE_THRESHOLD = 0.015
+CHANGE_THRESHOLD = 0.02
 
 def get_image_difference_percentage(img1, img2):
     """Calculates the percentage of different pixels between two images."""
