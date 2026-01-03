@@ -53,11 +53,11 @@ def update_display(image_path, full_refresh=True):
         epd = epd7in5_V2.EPD()
         
         if full_refresh:
-            logging.info("Mode: Full Refresh")
+            logging.info("Mode: Standard Full Refresh")
             epd.init()
         else:
-            logging.info("Mode: Partial Refresh")
-            epd.init_part()
+            logging.info("Mode: Fast Full Refresh")
+            epd.init_fast()
 
         logging.info(f"Loading image: {image_path}")
         Himage = Image.open(image_path)
@@ -68,10 +68,7 @@ def update_display(image_path, full_refresh=True):
         Himage = Himage.convert('1') 
 
         logging.info("Displaying image...")
-        if full_refresh:
-            epd.display(epd.getbuffer(Himage))
-        else:
-            epd.display_Partial(epd.getbuffer(Himage), 0, 0, epd.width, epd.height)
+        epd.display(epd.getbuffer(Himage))
         
         logging.info("Sleeping display...")
         epd.sleep()
