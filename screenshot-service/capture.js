@@ -85,6 +85,19 @@ async function startCapture() {
 
 async function takeScreenshot(page) {
     try {
+        try {
+            const refreshElements = await page.$x("//ha-button[contains(., 'Refresh')]");
+            for (const element of refreshElements) {
+                if (await element.boundingBox() != null) {
+                    console.log('Found visible "Refresh" ha-button. Clicking...');
+                    await element.click();
+                    await new Promise(r => setTimeout(r, 2000));
+                    break;
+                }
+            }
+        } catch (e) {
+        }
+
         console.log(`Taking screenshot at ${new Date().toISOString()}...`);
         await page.screenshot({ path: SCREENSHOT_PATH });
     } catch (error) {
