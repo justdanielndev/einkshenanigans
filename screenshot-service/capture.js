@@ -86,10 +86,10 @@ async function startCapture() {
 async function takeScreenshot(page) {
     try {
         try {
-            const refreshElements = await page.$x("//ha-button[contains(., 'Refresh')]");
+            const refreshElements = await page.$x("//*[contains(text(), 'Refresh')]");
             for (const element of refreshElements) {
                 if (await element.boundingBox() != null) {
-                    console.log('Found visible "Refresh" ha-button. Clicking...');
+                    console.log('Found visible "Refresh" text. Clicking...');
                     await element.click();
                     await new Promise(r => setTimeout(r, 2000));
                     break;

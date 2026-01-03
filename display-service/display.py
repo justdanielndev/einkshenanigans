@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.DEBUG)
 SHARED_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'shared')
 IMAGE_PATH = os.path.join(SHARED_DIR, 'current_view.png')
 PREVIOUS_IMAGE_PATH = os.path.join(SHARED_DIR, 'previous_view.png')
-CHANGE_THRESHOLD = 0.05  # 5%
+CHANGE_THRESHOLD = 0.015
 
 def get_image_difference_percentage(img1, img2):
     """Calculates the percentage of different pixels between two images."""
@@ -95,6 +95,7 @@ def main():
                 current_image = Image.open(IMAGE_PATH)
                 
                 should_update = False
+                diff_percent = 1.0
                 
                 if os.path.exists(PREVIOUS_IMAGE_PATH):
                     try:
@@ -116,8 +117,7 @@ def main():
 
                 if should_update:
                     update_count += 1
-                    # Full refresh every 3 updates (1st, 4th, 7th...)
-                    is_full_refresh = (update_count % 3 == 1)
+                    is_full_refresh = (update_count % 3 == 1) or (diff_percent > 0.50)
                     update_display(IMAGE_PATH, full_refresh=is_full_refresh)
 
                     current_image.save(PREVIOUS_IMAGE_PATH)
