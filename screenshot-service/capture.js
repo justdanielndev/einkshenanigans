@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
+require('dotenv').config();
 
 const URL_TO_CAPTURE = process.env.CAPTURE_URL || 'https://www.google.com';
 const HA_USERNAME = process.env.HA_USERNAME || '';
@@ -12,7 +13,7 @@ const VIEWPORT_HEIGHT = 480;
 async function startCapture() {
     console.log('Starting browser...');
     const browser = await puppeteer.launch({
-        executablePath: '/usr/bin/chromium',
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
         headless: "new",
         args: [
             '--no-sandbox',
