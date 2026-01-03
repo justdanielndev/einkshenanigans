@@ -117,7 +117,7 @@ def main():
 
                 if should_update:
                     update_count += 1
-                    is_full_refresh = (update_count % 3 == 1) or (diff_percent > 0.50)
+                    is_full_refresh = (update_count % 3 == 1)
                     update_display(IMAGE_PATH, full_refresh=is_full_refresh)
 
                     current_image.save(PREVIOUS_IMAGE_PATH)
