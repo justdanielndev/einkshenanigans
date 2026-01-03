@@ -14,8 +14,8 @@ if os.path.exists(libdir):
 
 try:
     from waveshare_epd import epd7in5_V2
-except ImportError:
-    print("Warning: waveshare_epd library not found. Running in simulation mode.")
+except ImportError as e:
+    print(f"Warning: waveshare_epd library not found. Running in simulation mode. Error: {e}")
     epd7in5_V2 = None
 
 logging.basicConfig(level=logging.DEBUG)
