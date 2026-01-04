@@ -23,7 +23,6 @@ logging.basicConfig(level=logging.DEBUG)
 SHARED_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'shared')
 IMAGE_PATH = os.path.join(SHARED_DIR, 'current_view.png')
 PREVIOUS_IMAGE_PATH = os.path.join(SHARED_DIR, 'previous_view.png')
-CHANGE_THRESHOLD = 0.015
 
 def get_image_difference_percentage(img1, img2):
     """Calculates the percentage of different pixels between two images."""
@@ -66,7 +65,7 @@ def update_display(image_path, full_refresh=True):
              Himage = Himage.resize((epd.width, epd.height))
 
         Himage = Himage.convert('L')
-        Himage = Himage.convert('1', dither=Image.Dither.FLOYDSTEINBERG)
+        Himage = Himage.convert('1')
 
         logging.info("Displaying image...")
         epd.display(epd.getbuffer(Himage))
@@ -84,45 +83,50 @@ def main():
     if not os.path.exists(SHARED_DIR):
         os.makedirs(SHARED_DIR)
 
-    last_update_time = 0
+    last_processed_mtime = 0
     update_count = 0
     
     while True:
         try:
             if os.path.exists(IMAGE_PATH):
-                current_image = Image.open(IMAGE_PATH)
+                current_mtime = os.path.getmtime(IMAGE_PATH)
                 
-                should_update = False
-                
-                if os.path.exists(PREVIOUS_IMAGE_PATH):
-                    try:
-                        previous_image = Image.open(PREVIOUS_IMAGE_PATH)
-                        diff_percent = get_image_difference_percentage(current_image, previous_image)
-                        logging.debug(f"Image difference: {diff_percent:.2%}")
-                        
-                        if diff_percent > CHANGE_THRESHOLD:
-                            logging.info(f"Change detected ({diff_percent:.2%} > {CHANGE_THRESHOLD:.2%}). Updating display.")
+                if current_mtime > last_processed_mtime:
+                    last_processed_mtime = current_mtime
+                    
+                    time.sleep(0.1) 
+                    
+                    current_image = Image.open(IMAGE_PATH)
+                    should_update = False
+                    
+                    if os.path.exists(PREVIOUS_IMAGE_PATH):
+                        try:
+                            previous_image = Image.open(PREVIOUS_IMAGE_PATH)
+                            diff_percent = get_image_difference_percentage(current_image, previous_image)
+                            
+                            if diff_percent > 0:
+                                logging.info(f"New image detected. Updating display.")
+                                should_update = True
+                            else:
+                                logging.debug("No change in image content.")
+                        except Exception as e:
+                            logging.error(f"Error comparing images: {e}")
                             should_update = True
-                        else:
-                            logging.debug("Change below threshold. Skipping update.")
-                    except Exception as e:
-                        logging.error(f"Error comparing images: {e}")
+                    else:
+                        logging.info("No previous image found. First run. Updating display.")
                         should_update = True
-                else:
-                    logging.info("No previous image found. First run. Updating display.")
-                    should_update = True
 
-                if should_update:
-                    update_count += 1
-                    is_full_refresh = (update_count % 3 == 1)
-                    update_display(IMAGE_PATH, full_refresh=is_full_refresh)
+                    if should_update:
+                        update_count += 1
+                        is_full_refresh = (update_count % 3 == 1) or (diff_percent > 0.50)
+                        update_display(IMAGE_PATH, full_refresh=is_full_refresh)
 
-                    current_image.save(PREVIOUS_IMAGE_PATH)
+                        current_image.save(PREVIOUS_IMAGE_PATH)
             
             else:
                 logging.info("Waiting for image source...")
 
-            time.sleep(5)
+            time.sleep(0.2)
 
         except KeyboardInterrupt:
             logging.info("Exiting...")
@@ -131,7 +135,7 @@ def main():
             break
         except Exception as e:
             logging.error(f"Unexpected error: {e}")
-            time.sleep(5)
+            time.sleep(0.5)
 
 if __name__ == "__main__":
     main()

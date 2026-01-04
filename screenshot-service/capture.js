@@ -1,5 +1,7 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
+const { PNG } = require('pngjs');
+const pixelmatch = require('pixelmatch');
 require('dotenv').config();
 
 const URL_TO_CAPTURE = process.env.CAPTURE_URL || 'https://www.google.com';
@@ -76,46 +78,51 @@ async function startCapture() {
         process.exit();
     });
 
+    let previousBuffer = null;
+
     while (true) {
-        await takeScreenshot(page);
-        await waitForPageChange(page);
-        console.log('Change detected, updating...');
-    }
-}
+        try {
+            const currentBuffer = await page.screenshot({ encoding: 'binary' });
 
-async function waitForPageChange(page) {
-    return page.evaluate(() => {
-        return new Promise((resolve) => {
-            const observer = new MutationObserver((mutations) => {
-                const significant = mutations.some(m => 
-                    m.type === 'characterData' || 
-                    m.type === 'childList' ||
-                    (m.type === 'attributes' && !m.attributeName.includes('style'))
-                );
-                if (significant) {
-                    observer.disconnect();
-                    resolve();
+            let shouldSave = false;
+
+            if (previousBuffer) {
+                try {
+                    const img1 = PNG.sync.read(previousBuffer);
+                    const img2 = PNG.sync.read(currentBuffer);
+                    const { width, height } = img1;
+                    
+                    const numDiffPixels = pixelmatch(img1.data, img2.data, null, width, height, { threshold: 0.1 });
+                    const changePercent = numDiffPixels / (width * height);
+                    
+                    if (changePercent > 0.005) {
+                        console.log(`Change detected: ${(changePercent * 100).toFixed(2)}%. Saving...`);
+                        shouldSave = true;
+                    } else {
+                        
+                    }
+                } catch (e) {
+                    console.error('Error comparing images:', e);
+                    shouldSave = true;
                 }
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true,
-                characterData: true,
-                attributes: true,
-                attributeFilter: ['src', 'alt', 'title']
-            });
-        });
-    });
-}
+            } else {
+                console.log('First run. Saving...');
+                shouldSave = true;
+            }
 
+            if (shouldSave) {
+                const fs = require('fs');
+                const tempPath = SCREENSHOT_PATH + '.tmp';
+                fs.writeFileSync(tempPath, currentBuffer);
+                fs.renameSync(tempPath, SCREENSHOT_PATH);
+                previousBuffer = currentBuffer;
+            }
 
-async function takeScreenshot(page) {
-    try {
-        console.log(`Taking screenshot at ${new Date().toISOString()}...`);
-        await page.screenshot({ path: SCREENSHOT_PATH });
-    } catch (error) {
-        console.error('Error taking screenshot:', error);
+        } catch (error) {
+            console.error('Error in loop:', error);
+        }
+
+        await new Promise(r => setTimeout(r, 1000));
     }
 }
 
