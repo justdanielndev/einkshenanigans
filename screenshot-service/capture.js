@@ -70,18 +70,45 @@ async function startCapture() {
 
     console.log('Starting screenshot loop...');
 
-    await takeScreenshot(page);
-
-    setInterval(async () => {
-        await takeScreenshot(page);
-    }, INTERVAL_MS);
-
     process.on('SIGINT', async () => {
         console.log('Closing browser...');
         await browser.close();
         process.exit();
     });
+
+    while (true) {
+        await takeScreenshot(page);
+        await waitForPageChange(page);
+        console.log('Change detected, updating...');
+    }
 }
+
+async function waitForPageChange(page) {
+    return page.evaluate(() => {
+        return new Promise((resolve) => {
+            const observer = new MutationObserver((mutations) => {
+                const significant = mutations.some(m => 
+                    m.type === 'characterData' || 
+                    m.type === 'childList' ||
+                    (m.type === 'attributes' && !m.attributeName.includes('style'))
+                );
+                if (significant) {
+                    observer.disconnect();
+                    resolve();
+                }
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                characterData: true,
+                attributes: true,
+                attributeFilter: ['src', 'alt', 'title']
+            });
+        });
+    });
+}
+
 
 async function takeScreenshot(page) {
     try {
