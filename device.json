@@ -14,5 +14,6 @@
             "endtime": "06:00"
         }
     ],
-    "randomize_screens": true
+    "randomize_screens": true,
+    "json_refresh_interval": 30
 }
