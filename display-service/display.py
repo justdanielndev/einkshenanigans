@@ -65,7 +65,8 @@ def update_display(image_path, full_refresh=True):
         if Himage.width != epd.width or Himage.height != epd.height:
              Himage = Himage.resize((epd.width, epd.height))
 
-        Himage = Himage.convert('1') 
+        Himage = Himage.convert('L')
+        Himage = Himage.convert('1', dither=Image.Dither.FLOYDSTEINBERG)
 
         logging.info("Displaying image...")
         epd.display(epd.getbuffer(Himage))
