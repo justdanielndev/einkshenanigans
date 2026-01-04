@@ -1,0 +1,284 @@
+title: Calendar v2
+type: sections
+max_columns: 4
+background:
+  opacity: 100
+  alignment: center
+  size: cover
+  repeat: repeat
+  attachment: fixed
+  image:
+    media_content_id: media-source://image_upload/2c2a6804ed8a51449690d5e8efdd1023
+    media_content_type: image/png
+    metadata:
+      title: Solid_white.png
+      thumbnail: /api/image/serve/2c2a6804ed8a51449690d5e8efdd1023/256x256
+      media_class: image
+      navigateIds:
+        - {}
+        - media_content_type: app
+          media_content_id: media-source://image_upload
+sections:
+  - type: grid
+    cards:
+      - entities:
+          - calendar.daniel_negrenavarro_me
+          - entity: calendar.festivos_en_espana
+            show_time: true
+            show_location: true
+        days_to_show: 30
+        filter_duplicates: true
+        title: ""
+        accent_color: "#000000"
+        vertical_line_width: 3px
+        first_day_of_week: monday
+        today_indicator: dot
+        today_indicator_color: "#000000"
+        weekday_font_size: 20px
+        day_font_size: 25px
+        month_font_size: 13px
+        weather:
+          position: event
+          date:
+            show_conditions: true
+            show_high_temp: true
+            show_low_temp: false
+            icon_size: 14px
+            font_size: 12px
+            color: var(--primary-text-color)
+          event:
+            show_conditions: true
+            show_temp: true
+            icon_size: 20px
+            font_size: 20px
+            color: var(--primary-text-color)
+          entity: weather.aemet
+        type: custom:calendar-card-pro
+        grid_options:
+          columns: 12
+          rows: 7
+  - type: grid
+    cards:
+      - type: custom:mushroom-media-player-card
+        entity: media_player.escapepod_2
+        use_media_info: true
+        fill_container: true
+        icon_type: entity-picture
+        show_volume_level: false
+        media_controls: []
+        volume_controls: []
+        collapsible_controls: false
+        grid_options:
+          columns: 12
+          rows: 2
+        card_mod:
+          style: |
+            ha-card {
+              --card-primary-font-size: 25px !important;
+              --card-secondary-font-size: 18px !important;
+              --icon-size: 90px !important;
+              --card-primary-line-height: 30px !important;
+              --card-secondary-line-height: 20px !important;
+              border-radius: 0px !important;
+              --ha-card-border-radius: 0px !important;
+              border-style: none;
+              border-width: 0;
+            }
+            mushroom-shape-avatar {
+              --icon-symbol-size: 80px !important;
+              --shape-avatar-size: 100px !important;
+            }
+            mushroom-state-info$: |
+              .container {
+                height: auto !important;
+                margin-top: 20px !important;
+              }
+              .primary {
+                margin-bottom: 10px !important;
+                padding-bottom: 8px !important;
+              }
+              .secondary {
+                margin-top: 10px !important;
+                padding-top: 20px !important;
+              }
+        visibility:
+          - condition: state
+            entity: media_player.escapepod_2
+            state: playing
+      - type: custom:mushroom-media-player-card
+        entity: media_player.dormitorio_sendspin
+        use_media_info: true
+        fill_container: true
+        icon_type: entity-picture
+        show_volume_level: false
+        media_controls: []
+        volume_controls: []
+        collapsible_controls: false
+        grid_options:
+          columns: 12
+          rows: 2
+        visibility:
+          - condition: state
+            entity: media_player.dormitorio_sendspin
+            state: playing
+        card_mod:
+          style: |
+            ha-card {
+              --card-primary-font-size: 25px !important;
+              --card-secondary-font-size: 18px !important;
+              --icon-size: 90px !important;
+              --card-primary-line-height: 30px !important;
+              --card-secondary-line-height: 20px !important;
+              border-radius: 0px !important;
+              --ha-card-border-radius: 0px !important;
+              border-style: none;
+              border-width: 0;
+            }
+            mushroom-shape-avatar {
+              --icon-symbol-size: 80px !important;
+              --shape-avatar-size: 100px !important;
+            }
+            mushroom-state-info$: |
+              .container {
+                height: auto !important;
+                margin-top: 20px !important;
+              }
+              .primary {
+                margin-bottom: 10px !important;
+                padding-bottom: 8px !important;
+              }
+              .secondary {
+                margin-top: 10px !important;
+                padding-top: 20px !important;
+              }
+      - type: custom:mushroom-media-player-card
+        use_media_info: true
+        fill_container: true
+        icon_type: entity-picture
+        show_volume_level: false
+        media_controls: []
+        volume_controls: []
+        collapsible_controls: false
+        grid_options:
+          columns: 12
+          rows: 2
+        visibility:
+          - condition: state
+            entity: media_player.dormitorio
+            state: playing
+          - condition: state
+            entity: media_player.dormitorio_sendspin
+            state_not: playing
+        entity: media_player.dormitorio
+        card_mod:
+          style: |
+            ha-card {
+              --card-primary-font-size: 25px !important;
+              --card-secondary-font-size: 18px !important;
+              --icon-size: 90px !important;
+              --card-primary-line-height: 30px !important;
+              --card-secondary-line-height: 20px !important;
+              border-radius: 0px !important;
+              --ha-card-border-radius: 0px !important;
+              border-style: none;
+              border-width: 0;
+            }
+            mushroom-shape-avatar {
+              --icon-symbol-size: 80px !important;
+              --shape-avatar-size: 100px !important;
+            }
+            mushroom-state-info$: |
+              .container {
+                height: auto !important;
+                margin-top: 20px !important;
+              }
+              .primary {
+                margin-bottom: 10px !important;
+                padding-bottom: 8px !important;
+              }
+              .secondary {
+                margin-top: 10px !important;
+                padding-top: 20px !important;
+              }
+      - type: custom:mushroom-legacy-template-card
+        entity: media_player.escapepod_2
+        primary: Paused
+        secondary: Nothing playing.
+        icon: mdi:speaker
+        layout: horizontal
+        fill_container: true
+        icon_color: blue
+        multiline_secondary: true
+        grid_options:
+          columns: 12
+          rows: 2
+        visibility:
+          - condition: state
+            entity: media_player.escapepod_2
+            state_not: playing
+          - condition: state
+            entity: media_player.dormitorio_sendspin
+            state_not: playing
+          - condition: state
+            entity: media_player.dormitorio
+            state_not: playing
+        card_mod:
+          style: |
+            ha-card {
+              --card-primary-font-size: 25px !important;
+              --card-secondary-font-size: 18px !important;
+              --icon-size: 90px !important;
+              --card-primary-line-height: 30px !important;
+              --card-secondary-line-height: 20px !important;
+              border-radius: 0px !important;
+              --ha-card-border-radius: 0px !important;
+              border-style: none;
+              border-width: 0;
+            }
+            mushroom-shape-avatar {
+              --icon-symbol-size: 80px !important;
+              --shape-avatar-size: 100px !important;
+            }
+            mushroom-state-info {
+              align-items: flex-start !important;
+            }
+            mushroom-state-info .container {
+              margin-top: 20px !important;
+            }
+            mushroom-state-info .primary {
+              margin-bottom: 10px !important;
+              padding-bottom: 8px !important;
+            }
+            mushroom-state-info .secondary {
+              margin-top: 10px !important;
+              padding-top: 20px !important;
+            }
+      - show_current: true
+        show_forecast: true
+        type: weather-forecast
+        entity: weather.aemet
+        forecast_type: daily
+        forecast_slots: 5
+        grid_options:
+          columns: 12
+          rows: 5
+        theme: Graphite E-ink Light
+        name:
+          type: area
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 0px !important;
+              --ha-card-border-radius: 0px !important;
+              border-style: none;
+              border-width: 0;
+            }
+            .temp-attribute .temp {
+              position: relative !important;
+              margin-right: 28px !important;
+              direction: ltr !important;
+            }
+    column_span: 1
+cards: []
+theme: Graphite E-ink Light
+path: cal

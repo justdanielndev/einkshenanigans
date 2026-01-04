@@ -1,0 +1,75 @@
+type: sections
+max_columns: 4
+title: Goodnight
+path: goodnight
+sections:
+  - type: grid
+    cards:
+      - type: heading
+        heading: Good Night!
+        heading_style: title
+        grid_options:
+          columns: full
+          rows: 2
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+            }
+            ha-card .container {
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            ha-card .content.title p {
+              font-size: 72px !important;
+              text-align: center;
+              margin: 0;
+            }
+      - show_current: true
+        show_forecast: true
+        type: weather-forecast
+        entity: weather.aemet
+        forecast_type: hourly
+        forecast_slots: 5
+        grid_options:
+          columns: 48
+          rows: 5
+        theme: Graphite E-ink Light
+        name:
+          type: area
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 0px !important;
+              --ha-card-border-radius: 0px !important;
+              border-style: none;
+              border-width: 0;
+            }
+            .temp-attribute .temp {
+              position: relative !important;
+              margin-right: 28px !important;
+              direction: ltr !important;
+            }
+    column_span: 4
+theme: Graphite E-ink Light
+cards: []
+background:
+  opacity: 100
+  alignment: center
+  size: cover
+  repeat: repeat
+  attachment: fixed
+  image:
+    media_content_id: media-source://image_upload/2c2a6804ed8a51449690d5e8efdd1023
+    media_content_type: image/png
+    metadata:
+      title: Solid_white.png
+      thumbnail: /api/image/serve/2c2a6804ed8a51449690d5e8efdd1023/256x256
+      media_class: image
+      children_media_class: null
+      navigateIds:
+        - {}
+        - media_content_type: app
+          media_content_id: media-source://image_upload
