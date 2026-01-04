@@ -1,0 +1,18 @@
+{
+    "screens": [
+        {
+            "url": "http://homeassistant.local:8123/dashboard-eink/0?kiosk",
+            "duration": 20
+        },
+        {
+            "url": "http://homeassistant.local:8123/dashboard-eink/1?kiosk",
+            "duration": 20
+        },
+        {
+            "url": "http://homeassistant.local:8123/dashboard-eink/2?kiosk",
+            "starttime": "20:00",
+            "endtime": "06:00"
+        }
+    ],
+    "randomize_screens": true
+}
