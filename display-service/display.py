@@ -64,7 +64,6 @@ def update_display(image_path, full_refresh=True):
         if Himage.width != epd.width or Himage.height != epd.height:
              Himage = Himage.resize((epd.width, epd.height))
 
-        Himage = Himage.convert('L')
         Himage = Himage.convert('1')
 
         logging.info("Displaying image...")
