@@ -15,5 +15,5 @@
         }
     ],
     "randomize_screens": true,
-    "json_refresh_interval": 30
+    "json_refresh_interval": 3
 }
