@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { databases, APPWRITE_CONFIG } from '@/lib/appwrite';
-import { Trash2, Settings, Save, Plus, X, Monitor, Clock, Calendar, Link as LinkIcon, Activity, Wifi, WifiOff, Edit2, ExternalLink } from 'lucide-react';
+import { Trash2, Settings, Save, Plus, X, Monitor, Clock, Calendar, Link as LinkIcon, Activity, Wifi, WifiOff, Edit2, ExternalLink, Filter } from 'lucide-react';
 
 const TimeInput = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
     const [h, m] = (value || '00:00').split(':');
@@ -32,11 +32,19 @@ const TimeInput = ({ value, onChange }: { value: string, onChange: (val: string)
     );
 };
 
+interface Condition {
+    type: 'if-user-zone';
+    user: string;
+    zone: string;
+}
+
 interface Screen {
     url: string;
     duration?: number;
     starttime?: string;
     endtime?: string;
+    conditions?: Condition[];
+    force_show_if_conditions_match?: boolean;
 }
 
 interface Device {
@@ -57,6 +65,7 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
     const [deviceName, setDeviceName] = useState(device.deviceId);
     const [isEditingPlaylist, setIsEditingPlaylist] = useState(false);
     const [isEditingSettings, setIsEditingSettings] = useState(false);
+    const [editingConditionsIndex, setEditingConditionsIndex] = useState<number | null>(null);
 
     useEffect(() => {
         try {
@@ -134,6 +143,32 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
         setScreens(screens.filter((_, i) => i !== index));
     };
 
+    const addCondition = (screenIndex: number) => {
+        const newScreens = [...screens];
+        const screen = newScreens[screenIndex];
+        if (!screen.conditions) screen.conditions = [];
+        screen.conditions.push({ type: 'if-user-zone', user: '', zone: '' });
+        setScreens(newScreens);
+    };
+
+    const updateCondition = (screenIndex: number, conditionIndex: number, field: keyof Condition, value: string) => {
+        const newScreens = [...screens];
+        const screen = newScreens[screenIndex];
+        if (screen.conditions) {
+            screen.conditions[conditionIndex] = { ...screen.conditions[conditionIndex], [field]: value };
+            setScreens(newScreens);
+        }
+    };
+
+    const removeCondition = (screenIndex: number, conditionIndex: number) => {
+        const newScreens = [...screens];
+        const screen = newScreens[screenIndex];
+        if (screen.conditions) {
+            screen.conditions = screen.conditions.filter((_, i) => i !== conditionIndex);
+            setScreens(newScreens);
+        }
+    };
+
     const getDomain = (url: string) => {
         try {
             return new URL(url).hostname.replace('www.', '');
@@ -177,7 +212,7 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                         className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-blue-500/50 font-mono"
                                     />
                                     
-                                    <div className="flex gap-2 mb-2">
+                                    <div className="flex gap-2 mb-2 flex-wrap">
                                         <button 
                                             onClick={() => toggleScreenMode(idx, 'duration')}
                                             className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded ${!screen.starttime ? 'bg-zinc-700 text-white' : 'bg-zinc-950 text-zinc-500 hover:text-zinc-300'}`}
@@ -190,10 +225,16 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                         >
                                             Schedule
                                         </button>
+                                        <button 
+                                            onClick={() => setEditingConditionsIndex(editingConditionsIndex === idx ? null : idx)}
+                                            className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded flex items-center gap-1 ${screen.conditions && screen.conditions.length > 0 ? 'bg-blue-900/30 text-blue-400 border border-blue-800' : 'bg-zinc-950 text-zinc-500 hover:text-zinc-300'}`}
+                                        >
+                                            <Filter size={10} /> Conditions {screen.conditions && screen.conditions.length > 0 && `(${screen.conditions.length})`}
+                                        </button>
                                     </div>
 
                                     {!screen.starttime ? (
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 mb-3">
                                             <Clock size={14} className="text-zinc-500" />
                                             <input
                                                 type="number"
@@ -204,7 +245,7 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                             <span className="text-xs text-zinc-500">min</span>
                                         </div>
                                     ) : (
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 mb-3">
                                             <Calendar size={14} className="text-zinc-500" />
                                             <TimeInput
                                                 value={screen.starttime || '08:00'}
@@ -215,6 +256,48 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                                 value={screen.endtime || '20:00'}
                                                 onChange={(val) => updateScreen(idx, 'endtime', val)}
                                             />
+                                        </div>
+                                    )}
+
+                                    {editingConditionsIndex === idx && (
+                                        <div className="bg-zinc-950/50 border border-zinc-800 rounded-lg p-3 space-y-3 animate-in slide-in-from-top-2 duration-200">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Conditions (All must match)</span>
+                                                <button onClick={() => addCondition(idx)} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"><Plus size={12} /> Add</button>
+                                            </div>
+                                            
+                                            {screen.conditions?.map((condition, cIdx) => (
+                                                <div key={cIdx} className="flex gap-2 items-center bg-zinc-900 p-2 rounded border border-zinc-800">
+                                                    <span className="text-xs text-zinc-500 font-mono">IF</span>
+                                                    <select className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1" disabled>
+                                                        <option>User Zone</option>
+                                                    </select>
+                                                    <input 
+                                                        placeholder="person.name" 
+                                                        value={condition.user}
+                                                        onChange={(e) => updateCondition(idx, cIdx, 'user', e.target.value)}
+                                                        className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-24"
+                                                    />
+                                                    <span className="text-xs text-zinc-500 font-mono">IS IN</span>
+                                                    <input 
+                                                        placeholder="zone.home" 
+                                                        value={condition.zone}
+                                                        onChange={(e) => updateCondition(idx, cIdx, 'zone', e.target.value)}
+                                                        className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-24"
+                                                    />
+                                                    <button onClick={() => removeCondition(idx, cIdx)} className="text-zinc-600 hover:text-red-400 ml-auto"><X size={12} /></button>
+                                                </div>
+                                            ))}
+
+                                            <label className="flex items-center gap-2 cursor-pointer pt-2 border-t border-zinc-800/50">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={screen.force_show_if_conditions_match || false}
+                                                    onChange={(e) => updateScreen(idx, 'force_show_if_conditions_match', e.target.checked)}
+                                                    className="rounded bg-zinc-900 border-zinc-800 text-blue-600 focus:ring-0 w-3 h-3"
+                                                />
+                                                <span className="text-xs text-zinc-400">Force show if conditions match (overrides schedule)</span>
+                                            </label>
                                         </div>
                                     )}
                                 </div>

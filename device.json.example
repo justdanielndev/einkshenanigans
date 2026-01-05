@@ -12,6 +12,17 @@
             "url": "http://homeassistant.local:8123/dashboard-eink/2?kiosk",
             "starttime": "20:00",
             "endtime": "06:00"
+        },
+        {
+            "url": "http://homeassistant.local:8123/dashboard-eink/alert?kiosk",
+            "conditions": [
+                {
+                    "type": "if-user-zone",
+                    "user": "person.zoe",
+                    "zone": "zone.home"
+                }
+            ],
+            "force_show": true
         }
     ],
     "randomize_screens": true,
