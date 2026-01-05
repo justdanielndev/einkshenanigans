@@ -16,6 +16,11 @@ Project to display a custom Home Assistant dashboard on a Waveshare 7.5" E-Ink d
     *   Updates the Waveshare E-Ink display.
     *   Switches between "Fast" and "Standard" refresh modes to avoid ghosting.
 
+3. **e-Ink Platform**:
+    *   A web-based platform to manage multiple devices and their configurations.
+    *   Provides an API endpoint to serve the `device.json` configuration files.
+    *   Serves a health check endpoint to monitor device status.
+
 ## Hardware Requirements
 
 *   **Server/Device** to run the screenshot service (e.g., Raspberry Pi, PC). Note that it obviously needs to support the HAT.
@@ -56,6 +61,8 @@ HA_PASSWORD=your_ha_password
 ### 3. Configuration (`device.json`)
 
 You need to host or provide a `device.json` file that tells the service what to display.
+
+This can now be done via the e-Ink Platform (also OSS), or you can create your own JSON file. Example:
 
 ```json
 {

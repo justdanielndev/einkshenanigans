@@ -6,6 +6,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const JSON_URL = process.env.JSON_URL;
+const HEALTH_URL = process.env.HEALTH_URL;
 const FALLBACK_URL = process.env.CAPTURE_URL || 'https://www.google.com';
 const HA_USERNAME = process.env.HA_USERNAME || '';
 const HA_PASSWORD = process.env.HA_PASSWORD || '';
@@ -18,6 +19,16 @@ let currentScreenIndex = 0;
 let lastScreenChangeTime = 0;
 let currentUrl = '';
 
+async function pingHealth() {
+    if (!HEALTH_URL) return;
+    try {
+        await axios.get(HEALTH_URL);
+        console.log('Health ping successful');
+    } catch (e) {
+        console.error('Health ping failed:', e.message);
+    }
+}
+
 async function fetchConfig() {
     if (!JSON_URL) return;
     try {
@@ -26,6 +37,8 @@ async function fetchConfig() {
         currentConfig = response.data;
         console.log('Config updated:', JSON.stringify(currentConfig, null, 2));
         
+        pingHealth();
+
         const interval = (currentConfig.json_refresh_interval || 30) * 60 * 1000;
         setTimeout(fetchConfig, interval);
     } catch (e) {
@@ -33,6 +46,8 @@ async function fetchConfig() {
         setTimeout(fetchConfig, 60000);
     }
 }
+
+setInterval(pingHealth, 5 * 60 * 1000);
 
 function parseTime(timeStr) {
     if (!timeStr) return 0;
