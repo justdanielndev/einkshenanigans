@@ -26,26 +26,35 @@ async function checkConditions(screen) {
     if (!screen.conditions || screen.conditions.length === 0) return true;
 
     for (const condition of screen.conditions) {
+        const expected = condition.expected_state !== undefined ? condition.expected_state : true;
+        let result = false;
+
         if (condition.type === 'if-user-zone') {
             if (!HA_ACCESS_TOKEN) {
                 console.warn('HA_ACCESS_TOKEN missing, skipping condition check');
-                return false;
-            }
-            try {
-                const response = await axios.get(`${HA_BASE_URL}/api/states/${condition.user}`, {
-                    headers: {
-                        'Authorization': `Bearer ${HA_ACCESS_TOKEN}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
-                const state = response.data.state;
-                if (state !== condition.zone) {
-                    return false;
+                result = false;
+            } else {
+                try {
+                    const response = await axios.get(`${HA_BASE_URL}/api/states/${condition.user}`, {
+                        headers: {
+                            'Authorization': `Bearer ${HA_ACCESS_TOKEN}`,
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    const state = response.data.state;
+                    result = (state === condition.zone);
+                } catch (e) {
+                    console.error(`Error checking HA condition for ${condition.user}:`, e.message);
+                    result = false;
                 }
-            } catch (e) {
-                console.error(`Error checking HA condition for ${condition.user}:`, e.message);
-                return false;
             }
+        } else if (condition.type === 'day-of-week') {
+            const today = new Date().getDay();
+            result = condition.days && condition.days.includes(today);
+        }
+
+        if (result !== expected) {
+            return false;
         }
     }
     return true;
@@ -266,7 +275,9 @@ async function startCapture() {
     while (true) {
         try {
             const now = Date.now();
-            if (now - lastScreenCheck > 5000) {
+            const checkInterval = (currentConfig?.conditions_check_interval || 5) * 60 * 1000;
+            
+            if (now - lastScreenCheck > checkInterval) {
                 await checkScreen(page);
                 lastScreenCheck = now;
             }

@@ -19,12 +19,19 @@
                 {
                     "type": "if-user-zone",
                     "user": "person.zoe",
-                    "zone": "zone.home"
+                    "zone": "zone.home",
+                    "expected_state": true
+                },
+                {
+                    "type": "day-of-week",
+                    "days": [1, 2, 3, 4, 5],
+                    "expected_state": true
                 }
             ],
-            "force_show": true
+            "force_show_if_conditions_match": true
         }
     ],
     "randomize_screens": true,
-    "json_refresh_interval": 3
+    "json_refresh_interval": 3,
+    "conditions_check_interval": 5
 }

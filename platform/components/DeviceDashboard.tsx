@@ -33,9 +33,11 @@ const TimeInput = ({ value, onChange }: { value: string, onChange: (val: string)
 };
 
 interface Condition {
-    type: 'if-user-zone';
-    user: string;
-    zone: string;
+    type: 'if-user-zone' | 'day-of-week';
+    user?: string;
+    zone?: string;
+    days?: number[];
+    expected_state: boolean;
 }
 
 interface Screen {
@@ -53,6 +55,8 @@ interface Device {
     screens: string;
     randomize_screens: boolean;
     json_refresh_interval: number;
+    conditions_check_interval?: number;
+    first_day_of_week?: 'monday' | 'sunday';
     last_seen?: string;
     last_updated?: string;
     dev_mode?: boolean;
@@ -61,6 +65,8 @@ interface Device {
 export default function DeviceDashboard({ device, onDelete, onUpdate }: { device: Device, onDelete: () => void, onUpdate: () => void }) {
     const [screens, setScreens] = useState<Screen[]>([]);
     const [randomize, setRandomize] = useState(device.randomize_screens);
+    const [firstDay, setFirstDay] = useState<'monday' | 'sunday'>(device.first_day_of_week || 'monday');
+    const [conditionsInterval, setConditionsInterval] = useState(device.conditions_check_interval || 5);
     const [devMode, setDevMode] = useState(device.json_refresh_interval === 2);
     const [deviceName, setDeviceName] = useState(device.deviceId);
     const [isEditingPlaylist, setIsEditingPlaylist] = useState(false);
@@ -74,6 +80,8 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
             setScreens([]);
         }
         setRandomize(device.randomize_screens);
+        setFirstDay(device.first_day_of_week || 'monday');
+        setConditionsInterval(device.conditions_check_interval || 5);
         setDevMode(device.json_refresh_interval === 2);
         setDeviceName(device.deviceId);
     }, [device]);
@@ -93,6 +101,8 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                 {
                     screens: JSON.stringify(screens),
                     randomize_screens: randomize,
+                    first_day_of_week: firstDay,
+                    conditions_check_interval: conditionsInterval,
                     json_refresh_interval: devMode ? 2 : 15,
                     deviceId: deviceName,
                     last_edited: new Date().toISOString()
@@ -147,15 +157,34 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
         const newScreens = [...screens];
         const screen = newScreens[screenIndex];
         if (!screen.conditions) screen.conditions = [];
-        screen.conditions.push({ type: 'if-user-zone', user: '', zone: '' });
+        screen.conditions.push({ type: 'if-user-zone', user: '', zone: '', expected_state: true });
         setScreens(newScreens);
     };
 
-    const updateCondition = (screenIndex: number, conditionIndex: number, field: keyof Condition, value: string) => {
+    const updateCondition = (screenIndex: number, conditionIndex: number, field: keyof Condition, value: any) => {
         const newScreens = [...screens];
         const screen = newScreens[screenIndex];
         if (screen.conditions) {
-            screen.conditions[conditionIndex] = { ...screen.conditions[conditionIndex], [field]: value };
+            let newCondition = { ...screen.conditions[conditionIndex], [field]: value };
+            
+            if (field === 'type') {
+                if (value === 'if-user-zone') {
+                    newCondition = { 
+                        type: 'if-user-zone', 
+                        user: '', 
+                        zone: '', 
+                        expected_state: newCondition.expected_state 
+                    };
+                } else if (value === 'day-of-week') {
+                    newCondition = { 
+                        type: 'day-of-week', 
+                        days: [], 
+                        expected_state: newCondition.expected_state 
+                    };
+                }
+            }
+            
+            screen.conditions[conditionIndex] = newCondition;
             setScreens(newScreens);
         }
     };
@@ -267,24 +296,64 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                             </div>
                                             
                                             {screen.conditions?.map((condition, cIdx) => (
-                                                <div key={cIdx} className="flex gap-2 items-center bg-zinc-900 p-2 rounded border border-zinc-800">
+                                                <div key={cIdx} className="flex flex-wrap gap-2 items-center bg-zinc-900 p-2 rounded border border-zinc-800">
                                                     <span className="text-xs text-zinc-500 font-mono">IF</span>
-                                                    <select className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1" disabled>
-                                                        <option>User Zone</option>
+                                                    
+                                                    <select 
+                                                        value={condition.type}
+                                                        onChange={(e) => updateCondition(idx, cIdx, 'type', e.target.value)}
+                                                        className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1"
+                                                    >
+                                                        <option value="if-user-zone">User Zone</option>
+                                                        <option value="day-of-week">Day of Week</option>
                                                     </select>
-                                                    <input 
-                                                        placeholder="person.name" 
-                                                        value={condition.user}
-                                                        onChange={(e) => updateCondition(idx, cIdx, 'user', e.target.value)}
-                                                        className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-24"
-                                                    />
-                                                    <span className="text-xs text-zinc-500 font-mono">IS IN</span>
-                                                    <input 
-                                                        placeholder="zone.home" 
-                                                        value={condition.zone}
-                                                        onChange={(e) => updateCondition(idx, cIdx, 'zone', e.target.value)}
-                                                        className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-24"
-                                                    />
+
+                                                    <button 
+                                                        onClick={() => updateCondition(idx, cIdx, 'expected_state', !condition.expected_state)}
+                                                        className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded border ${condition.expected_state ? 'bg-green-900/20 text-green-400 border-green-800' : 'bg-red-900/20 text-red-400 border-red-800'}`}
+                                                    >
+                                                        {condition.expected_state ? 'IS TRUE' : 'IS FALSE'}
+                                                    </button>
+
+                                                    {condition.type === 'if-user-zone' ? (
+                                                        <>
+                                                            <input 
+                                                                placeholder="person.name" 
+                                                                value={condition.user || ''}
+                                                                onChange={(e) => updateCondition(idx, cIdx, 'user', e.target.value)}
+                                                                className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-24"
+                                                            />
+                                                            <span className="text-xs text-zinc-500 font-mono">IN</span>
+                                                            <input 
+                                                                placeholder="zone.home" 
+                                                                value={condition.zone || ''}
+                                                                onChange={(e) => updateCondition(idx, cIdx, 'zone', e.target.value)}
+                                                                className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-24"
+                                                            />
+                                                        </>
+                                                    ) : (
+                                                        <div className="flex gap-1">
+                                                            {(firstDay === 'monday' 
+                                                                ? [['M', 1], ['T', 2], ['W', 3], ['T', 4], ['F', 5], ['S', 6], ['S', 0]] 
+                                                                : [['S', 0], ['M', 1], ['T', 2], ['W', 3], ['T', 4], ['F', 5], ['S', 6]]
+                                                            ).map(([day, dIdx]) => (
+                                                                <button
+                                                                    key={dIdx}
+                                                                    onClick={() => {
+                                                                        const currentDays = condition.days || [];
+                                                                        const newDays = currentDays.includes(dIdx as number) 
+                                                                            ? currentDays.filter(d => d !== dIdx)
+                                                                            : [...currentDays, dIdx as number];
+                                                                        updateCondition(idx, cIdx, 'days', newDays);
+                                                                    }}
+                                                                    className={`w-6 h-6 rounded text-[10px] flex items-center justify-center border ${condition.days?.includes(dIdx as number) ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500'}`}
+                                                                >
+                                                                    {day}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    
                                                     <button onClick={() => removeCondition(idx, cIdx)} className="text-zinc-600 hover:text-red-400 ml-auto"><X size={12} /></button>
                                                 </div>
                                             ))}
@@ -414,6 +483,33 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                     <span className="text-sm text-zinc-300">Randomize Screens</span>
                                 </label>
                             </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-500 mb-2">First Day of Week</label>
+                                    <div className="flex gap-2">
+                                        {['monday', 'sunday'].map((day) => (
+                                            <button
+                                                key={day}
+                                                onClick={() => setFirstDay(day as 'monday' | 'sunday')}
+                                                className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider border ${firstDay === day ? 'bg-zinc-700 border-zinc-600 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:text-zinc-300'}`}
+                                            >
+                                                {day}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-500 mb-2">Conditions Update (min)</label>
+                                    <input 
+                                        type="number" 
+                                        min="1" 
+                                        max="15" 
+                                        value={conditionsInterval}
+                                        onChange={(e) => setConditionsInterval(Math.max(1, Math.min(15, parseInt(e.target.value) || 1)))}
+                                        className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-1.5 text-zinc-100 focus:outline-none focus:border-blue-500/50"
+                                    />
+                                </div>
+                            </div>
                             <div className="pt-4 border-t border-zinc-800">
                                 <button onClick={onDelete} className="text-red-400 hover:text-red-300 text-sm flex items-center gap-2">
                                     <Trash2 size={14} /> Delete Device
@@ -445,6 +541,14 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                     <li className="flex justify-between border-b border-zinc-800/50 pb-1">
                                         <span>Refresh Interval</span>
                                         <span>{devMode ? '2 min' : '15 min'}</span>
+                                    </li>
+                                    <li className="flex justify-between border-b border-zinc-800/50 pb-1">
+                                        <span>First Day</span>
+                                        <span className="capitalize">{firstDay}</span>
+                                    </li>
+                                    <li className="flex justify-between border-b border-zinc-800/50 pb-1">
+                                        <span>Conditions Check</span>
+                                        <span>{conditionsInterval} min</span>
                                     </li>
                                     <li className="flex justify-between border-b border-zinc-800/50 pb-1">
                                         <span>Screens</span>
