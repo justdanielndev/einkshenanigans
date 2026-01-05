@@ -4,6 +4,34 @@ import { useState, useEffect } from 'react';
 import { databases, APPWRITE_CONFIG } from '@/lib/appwrite';
 import { Trash2, Settings, Save, Plus, X, Monitor, Clock, Calendar, Link as LinkIcon, Activity, Wifi, WifiOff, Edit2, ExternalLink } from 'lucide-react';
 
+const TimeInput = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
+    const [h, m] = (value || '00:00').split(':');
+    const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+    const minutes = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+
+    const displayMinutes = minutes.includes(m) ? minutes : [...minutes, m].sort();
+
+    return (
+        <div className="flex items-center bg-zinc-950 border border-zinc-800 rounded px-1">
+            <select 
+                value={h}
+                onChange={(e) => onChange(`${e.target.value}:${m}`)}
+                className="bg-transparent text-zinc-200 text-sm p-1 font-mono focus:outline-none cursor-pointer hover:text-white appearance-none text-center w-8"
+            >
+                {hours.map(hour => <option key={hour} value={hour} className="bg-zinc-900">{hour}</option>)}
+            </select>
+            <span className="text-zinc-500 font-mono">:</span>
+            <select 
+                value={m}
+                onChange={(e) => onChange(`${h}:${e.target.value}`)}
+                className="bg-transparent text-zinc-200 text-sm p-1 font-mono focus:outline-none cursor-pointer hover:text-white appearance-none text-center w-8"
+            >
+                {displayMinutes.map(min => <option key={min} value={min} className="bg-zinc-900">{min}</option>)}
+            </select>
+        </div>
+    );
+};
+
 interface Screen {
     url: string;
     duration?: number;
@@ -80,7 +108,29 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
         setScreens(newScreens);
     };
 
+    const toggleScreenMode = (index: number, mode: 'duration' | 'schedule') => {
+        const newScreens = [...screens];
+        const screen = newScreens[index];
+        
+        if (mode === 'schedule') {
+            if (!screen.starttime) {
+                screen.starttime = '08:00';
+                screen.endtime = '20:00';
+                delete screen.duration; 
+            }
+        } else {
+            delete screen.starttime;
+            delete screen.endtime;
+            if (!screen.duration) screen.duration = 20;
+        }
+        setScreens(newScreens);
+    };
+
     const removeScreen = (index: number) => {
+        if (screens.length <= 1) {
+            alert('You must have at least one screen.');
+            return;
+        }
         setScreens(screens.filter((_, i) => i !== index));
     };
 
@@ -101,7 +151,7 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                     {isEditingPlaylist ? (
                         <div className="flex gap-2">
                             <button onClick={() => setIsEditingPlaylist(false)} className="text-sm text-zinc-400 hover:text-zinc-300 px-3 py-1.5">Cancel</button>
-                            <button onClick={handleSave} className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-500">Save Playlist</button>
+                            <button onClick={handleSave} className="text-sm bg-gray-600 text-white px-3 py-1.5 rounded-lg hover:bg-gray-500">Save Screens</button>
                         </div>
                     ) : (
                         <button 
@@ -126,7 +176,23 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                         onChange={(e) => updateScreen(idx, 'url', e.target.value)}
                                         className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-blue-500/50 font-mono"
                                     />
-                                    <div className="flex gap-4">
+                                    
+                                    <div className="flex gap-2 mb-2">
+                                        <button 
+                                            onClick={() => toggleScreenMode(idx, 'duration')}
+                                            className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded ${!screen.starttime ? 'bg-zinc-700 text-white' : 'bg-zinc-950 text-zinc-500 hover:text-zinc-300'}`}
+                                        >
+                                            Duration
+                                        </button>
+                                        <button 
+                                            onClick={() => toggleScreenMode(idx, 'schedule')}
+                                            className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded ${screen.starttime ? 'bg-zinc-700 text-white' : 'bg-zinc-950 text-zinc-500 hover:text-zinc-300'}`}
+                                        >
+                                            Schedule
+                                        </button>
+                                    </div>
+
+                                    {!screen.starttime ? (
                                         <div className="flex items-center gap-2">
                                             <Clock size={14} className="text-zinc-500" />
                                             <input
@@ -137,7 +203,20 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                             />
                                             <span className="text-xs text-zinc-500">min</span>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2">
+                                            <Calendar size={14} className="text-zinc-500" />
+                                            <TimeInput
+                                                value={screen.starttime || '08:00'}
+                                                onChange={(val) => updateScreen(idx, 'starttime', val)}
+                                            />
+                                            <span className="text-xs text-zinc-500">to</span>
+                                            <TimeInput
+                                                value={screen.endtime || '20:00'}
+                                                onChange={(val) => updateScreen(idx, 'endtime', val)}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -163,7 +242,11 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                 </div>
                                 <div className="p-4">
                                     <div className="flex justify-between items-center text-xs text-zinc-500">
-                                        <span className="flex items-center gap-1"><Clock size={12} /> {screen.duration || 20}m</span>
+                                        {screen.starttime ? (
+                                            <span className="flex items-center gap-1"><Calendar size={12} /> {screen.starttime} - {screen.endtime}</span>
+                                        ) : (
+                                            <span className="flex items-center gap-1"><Clock size={12} /> {screen.duration || 20}m</span>
+                                        )}
                                         <a href={screen.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400"><ExternalLink size={12} /></a>
                                     </div>
                                 </div>
