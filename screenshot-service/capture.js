@@ -52,6 +52,44 @@ async function checkConditions(screen) {
                     result = false;
                 }
             }
+        } else if (condition.type === 'if-calendar-event') {
+            if (!HA_ACCESS_TOKEN) {
+                console.warn('HA_ACCESS_TOKEN missing, skipping condition check');
+                result = false;
+            } else {
+                try {
+                    const now = new Date();
+                    const start = now.toISOString();
+                    const end = new Date(now.getTime() + (condition.offset || 0) * 60 * 1000).toISOString();
+                    
+                    const url = `${HA_BASE_URL}/api/calendars/${condition.calendar}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+                    
+                    const response = await axios.get(url, {
+                        headers: {
+                            'Authorization': `Bearer ${HA_ACCESS_TOKEN}`,
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    const events = response.data;
+                    
+                    if (condition.search) {
+                        result = events.some(event => 
+                            (event.summary && event.summary.toLowerCase().includes(condition.search.toLowerCase())) ||
+                            (event.description && event.description.toLowerCase().includes(condition.search.toLowerCase()))
+                        );
+                    } else {
+                        result = events.length > 0;
+                    }
+                    console.log(`Calendar match result: ${result}`);
+                } catch (e) {
+                    console.error(`Error checking HA calendar ${condition.calendar}:`, e.message);
+                    if (e.response) {
+                        console.error(`Response status: ${e.response.status}, data:`, e.response.data);
+                    }
+                    result = false;
+                }
+            }
         } else if (condition.type === 'day-of-week') {
             const today = new Date().getDay();
             result = condition.days && condition.days.includes(today);
@@ -157,7 +195,6 @@ async function checkScreen(page) {
         if (nowMs - lastScreenChangeTime > currentDuration) {
              currentScreenIndex = (currentScreenIndex + 1) % forcedScreens.length;
              lastScreenChangeTime = nowMs;
-             console.log(`Forced screen duration expired. Switching to index ${currentScreenIndex}`);
         }
         targetScreen = forcedScreens[currentScreenIndex];
     } else {

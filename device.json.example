@@ -26,6 +26,13 @@
                     "type": "day-of-week",
                     "days": [1, 2, 3, 4, 5],
                     "expected_state": true
+                },
+                {
+                    "type": "if-calendar-event",
+                    "calendar": "calendar.personal",
+                    "search": "Meeting",
+                    "offset": 30,
+                    "expected_state": true
                 }
             ],
             "force_show_if_conditions_match": true

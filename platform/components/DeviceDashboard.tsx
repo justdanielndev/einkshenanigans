@@ -33,10 +33,13 @@ const TimeInput = ({ value, onChange }: { value: string, onChange: (val: string)
 };
 
 interface Condition {
-    type: 'if-user-zone' | 'day-of-week';
+    type: 'if-user-zone' | 'day-of-week' | 'if-calendar-event';
     user?: string;
     zone?: string;
     days?: number[];
+    calendar?: string;
+    search?: string;
+    offset?: number;
     expected_state: boolean;
 }
 
@@ -181,6 +184,14 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                         days: [], 
                         expected_state: newCondition.expected_state 
                     };
+                } else if (value === 'if-calendar-event') {
+                    newCondition = {
+                        type: 'if-calendar-event',
+                        calendar: '',
+                        search: '',
+                        offset: 0,
+                        expected_state: newCondition.expected_state
+                    };
                 }
             }
             
@@ -306,6 +317,7 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                                     >
                                                         <option value="if-user-zone">User Zone</option>
                                                         <option value="day-of-week">Day of Week</option>
+                                                        <option value="if-calendar-event">Calendar Event</option>
                                                     </select>
 
                                                     <button 
@@ -331,7 +343,7 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                                                 className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-24"
                                                             />
                                                         </>
-                                                    ) : (
+                                                    ) : condition.type === 'day-of-week' ? (
                                                         <div className="flex gap-1">
                                                             {(firstDay === 'monday' 
                                                                 ? [['M', 1], ['T', 2], ['W', 3], ['T', 4], ['F', 5], ['S', 6], ['S', 0]] 
@@ -351,6 +363,33 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                                                                     {day}
                                                                 </button>
                                                             ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex gap-2 items-center">
+                                                            <input 
+                                                                placeholder="calendar.entity" 
+                                                                value={condition.calendar || ''}
+                                                                onChange={(e) => updateCondition(idx, cIdx, 'calendar', e.target.value)}
+                                                                className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-32"
+                                                            />
+                                                            <span className="text-[10px] text-zinc-500 uppercase font-bold">Search</span>
+                                                            <input 
+                                                                placeholder="Title/Tag" 
+                                                                value={condition.search || ''}
+                                                                onChange={(e) => updateCondition(idx, cIdx, 'search', e.target.value)}
+                                                                className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-24"
+                                                            />
+                                                            <span className="text-[10px] text-zinc-500 uppercase font-bold">Next</span>
+                                                            <div className="flex items-center gap-1">
+                                                                <input 
+                                                                    type="number"
+                                                                    placeholder="0" 
+                                                                    value={condition.offset || 0}
+                                                                    onChange={(e) => updateCondition(idx, cIdx, 'offset', parseInt(e.target.value) || 0)}
+                                                                    className="bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-300 px-2 py-1 w-12"
+                                                                />
+                                                                <span className="text-[10px] text-zinc-500">min</span>
+                                                            </div>
                                                         </div>
                                                     )}
                                                     
