@@ -127,7 +127,7 @@ export default function Home() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-zinc-800 border-t-zinc-400"></div>
             </div>
         );
     }
@@ -146,7 +146,7 @@ export default function Home() {
                                           height={228}
                                           className="h-8 w-auto"
                                       />
-                                      <span className="px-2 py-1 rounded-md text-xs font-medium text-blue-400 border border-blue-500/30 bg-blue-500/5">BETA</span>
+                                      <span className="px-2 py-1 rounded-md text-xs font-extrabold text-gray-400 border border-gray-500/30 bg-gray-500/5">BETA</span>
                                   </div>
                          </div>
                         <div className="flex items-center gap-4">

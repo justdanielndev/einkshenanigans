@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { account } from '@/lib/appwrite';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -25,8 +26,16 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100">
             <div className="bg-zinc-900 p-8 rounded-xl shadow-xl border border-zinc-800 w-96">
+                <div className="flex justify-center mb-6">
+                    <Image
+                        src="/cloudname.png"
+                        alt="openInk Cloud"
+                        width={1000}
+                        height={100}
+                    />
+                </div>
                 <h1 className="text-2xl font-bold mb-2 text-center text-zinc-100">Welcome Back</h1>
-                <p className="text-zinc-500 text-center mb-8 text-sm">Sign in to manage your display.</p>
+                <p className="text-zinc-500 text-center mb-8 text-sm">Sign in to manage your device(s).</p>
                 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg mb-6 text-sm">
@@ -41,7 +50,7 @@ export default function LoginPage() {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-zinc-100 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 transition-all"
                             required
                             placeholder="you@example.com"
                         />
@@ -52,20 +61,20 @@ export default function LoginPage() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-zinc-100 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 transition-all"
                             required
                             placeholder="••••••••"
                         />
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20 mt-2"
+                        className="w-full bg-zinc-700 text-white p-3 rounded-lg font-medium hover:bg-zinc-600 transition-colors shadow-lg shadow-zinc-900/50 mt-2"
                     >
                         Sign In
                     </button>
                 </form>
                 <p className="mt-6 text-center text-sm text-zinc-500">
-                    Don't have an account? <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-medium">Sign up</Link>
+                    Don't have an account? <Link href="/signup" className="text-zinc-300 hover:text-zinc-100 font-medium">Sign up</Link>
                 </p>
             </div>
         </div>
