@@ -35,7 +35,9 @@ async function checkConditions(screen) {
                 result = false;
             } else {
                 try {
-                    const response = await axios.get(`${HA_BASE_URL}/api/states/${condition.user}`, {
+                    const url = `${HA_BASE_URL}/api/states/${condition.user}`;
+                    console.log(`Checking condition: GET ${url}`);
+                    const response = await axios.get(url, {
                         headers: {
                             'Authorization': `Bearer ${HA_ACCESS_TOKEN}`,
                             'Content-Type': 'application/json',
@@ -43,8 +45,12 @@ async function checkConditions(screen) {
                     });
                     const state = response.data.state;
                     result = (state === condition.zone);
+                    console.log(`Condition response: state="${state}", expected="${condition.zone}", result=${result}`);
                 } catch (e) {
                     console.error(`Error checking HA condition for ${condition.user}:`, e.message);
+                    if (e.response) {
+                        console.error(`Response status: ${e.response.status}, data:`, e.response.data);
+                    }
                     result = false;
                 }
             }
