@@ -89,7 +89,7 @@ This can now be done via the e-Ink Platform (also OSS), or you can create your o
                 {
                     "type": "if-user-zone",
                     "user": "person.z",
-                    "zone": "zone.home",
+                    "zone": "home",
                     "expected_state": true
                 },
                 {

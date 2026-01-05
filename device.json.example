@@ -19,7 +19,7 @@
                 {
                     "type": "if-user-zone",
                     "user": "person.zoe",
-                    "zone": "zone.home",
+                    "zone": "home",
                     "expected_state": true
                 },
                 {
