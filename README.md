@@ -120,9 +120,15 @@ This can now be done via the e-Ink Platform (also OSS), or you can create your o
             *   **day-of-week**: Checks if today is one of the specified days.
                 *   **days**: Array of integers representing days of the week (0 = Sunday, 6 = Saturday).
                 *   **expected_state**: true if today should be in the list, false otherwise.
+            *   **if-calendar-event**: Checks for events in a Home Assistant calendar.
+                *   **calendar**: Home Assistant calendar entity ID (e.g., `calendar.personal`).
+                *   **search**: (Optional) Keyword to search for in event title/description.
+                *   **offset**: (Optional) Minutes into the future to look for events (default: 0, matches current events).
+                *   **expected_state**: true if a matching event should exist, false otherwise.
     *   **force_show_if_conditions_match**: (Optional) If true, shows only this screen (and others with the same check with their conditions matching too) when all conditions match, overriding normal rotation and time checks.
         
 *   **randomize_screens**: If true, picks random screens instead of sequential order.
+*   **first_day_of_week**: (Optional) "monday" or "sunday" (default: "monday"). Used for UI display in the cloud platform.
 *   **json_refresh_interval**: Minutes between checking for config updates.
 *   **conditions_check_interval**: Minutes between checking condition states (e.g., user location, day of week).
 
