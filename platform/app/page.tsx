@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { account, databases, APPWRITE_CONFIG } from '@/lib/appwrite';
 import { useRouter } from 'next/navigation';
 import { ID, Query, Permission, Role } from 'appwrite';
@@ -138,9 +139,15 @@ export default function Home() {
                     <div className="flex justify-between h-16">
                         <div className="flex items-center gap-3">
                              <div className="flex items-center gap-2">
-                                 <h1 className="text-xl font-bold text-zinc-100 tracking-tight">openInk Cloud</h1>
-                                 <span className="px-2 py-1 rounded-md text-xs font-medium text-blue-400 border border-blue-500/30 bg-blue-500/5">BETA</span>
-                             </div>
+                                      <Image
+                                          src="/cloudname.png"
+                                          alt="openInk Cloud"
+                                          width={1234}
+                                          height={228}
+                                          className="h-8 w-auto"
+                                      />
+                                      <span className="px-2 py-1 rounded-md text-xs font-medium text-blue-400 border border-blue-500/30 bg-blue-500/5">BETA</span>
+                                  </div>
                          </div>
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col items-end">
@@ -223,9 +230,9 @@ export default function Home() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className={isOnline ? 'text-emerald-500' : 'text-zinc-700'}>
-                                        {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
-                                    </div>
+                                    <div className={isOnline ? 'text-emerald-500' : 'text-red-500'}>
+                                         {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
+                                     </div>
                                 </button>
                             );
                         })}
