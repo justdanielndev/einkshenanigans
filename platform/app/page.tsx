@@ -157,8 +157,8 @@ export default function Home() {
                 </div>
             </nav>
 
-            <div className="flex-1 max-w-7xl mx-auto w-full flex flex-col lg:flex-row">
-                <main className="flex-1 p-4 sm:p-6 lg:p-8 order-2 lg:order-1">
+            <div className="flex-1 w-full flex flex-col lg:flex-row">
+                <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 order-2 lg:order-1">
                     <div className="mb-8">
                         <h2 className="text-3xl font-bold text-zinc-100 tracking-tight">{getGreeting()}, {user?.name?.split(' ')[0] || 'User'}!</h2>
                         <p className="text-zinc-500 text-sm mt-1">Manage your e-ink displays and their content</p>

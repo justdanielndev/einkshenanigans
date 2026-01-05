@@ -308,33 +308,35 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
                         </button>
                     </div>
                 ) : (
-                    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
-                        {screens.length === 0 && (
-                            <div className="w-full py-8 text-center text-zinc-500 text-sm bg-zinc-900/30 rounded-xl border border-dashed border-zinc-800">
-                                No screens added.
-                            </div>
-                        )}
-                        {screens.map((screen, idx) => (
-                            <div key={idx} className="flex-shrink-0 w-64 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-700 transition-all group">
-                                <div className="h-32 bg-zinc-950 flex items-center justify-center border-b border-zinc-800 relative">
-                                    <span className="text-4xl font-bold text-zinc-800 select-none">{idx + 1}</span>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 to-transparent opacity-60" />
-                                    <div className="absolute bottom-3 left-3 right-3">
-                                        <p className="text-xs font-mono text-zinc-400 truncate">{getDomain(screen.url)}</p>
+                    <div className="w-full overflow-hidden">
+                        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                            {screens.length === 0 && (
+                                <div className="w-full py-8 text-center text-zinc-500 text-sm bg-zinc-900/30 rounded-xl border border-dashed border-zinc-800">
+                                    No screens added.
+                                </div>
+                            )}
+                            {screens.map((screen, idx) => (
+                                <div key={idx} className="flex-shrink-0 w-64 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-700 transition-all group">
+                                    <div className="h-32 bg-zinc-950 flex items-center justify-center border-b border-zinc-800 relative">
+                                        <span className="text-4xl font-bold text-zinc-800 select-none">{idx + 1}</span>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 to-transparent opacity-60" />
+                                        <div className="absolute bottom-3 left-3 right-3">
+                                            <p className="text-xs font-mono text-zinc-400 truncate">{getDomain(screen.url)}</p>
+                                        </div>
+                                    </div>
+                                    <div className="p-4">
+                                        <div className="flex justify-between items-center text-xs text-zinc-500">
+                                            {screen.starttime ? (
+                                                <span className="flex items-center gap-1"><Calendar size={12} /> {screen.starttime} - {screen.endtime}</span>
+                                            ) : (
+                                                <span className="flex items-center gap-1"><Clock size={12} /> {screen.duration || 20}m</span>
+                                            )}
+                                            <a href={screen.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400"><ExternalLink size={12} /></a>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="p-4">
-                                    <div className="flex justify-between items-center text-xs text-zinc-500">
-                                        {screen.starttime ? (
-                                            <span className="flex items-center gap-1"><Calendar size={12} /> {screen.starttime} - {screen.endtime}</span>
-                                        ) : (
-                                            <span className="flex items-center gap-1"><Clock size={12} /> {screen.duration || 20}m</span>
-                                        )}
-                                        <a href={screen.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400"><ExternalLink size={12} /></a>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 )}
             </section>
