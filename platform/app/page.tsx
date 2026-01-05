@@ -134,7 +134,7 @@ export default function Home() {
     return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
             <nav className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="w-full px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center gap-3">
                             <h1 className="text-xl font-bold text-zinc-100 tracking-tight">e-Ink Platform</h1>
