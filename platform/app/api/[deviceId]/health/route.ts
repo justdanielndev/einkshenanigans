@@ -9,14 +9,15 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const lastUpdatedStr = searchParams.get('lastupdated');
 
+    if (!lastUpdatedStr) {
+        return NextResponse.json({ status: 'ignored', message: 'Missing lastupdated parameter' });
+    }
+
     try {
         const updateData: any = {
-            last_seen: new Date().toISOString()
+            last_seen: new Date().toISOString(),
+            last_updated: lastUpdatedStr
         };
-
-        if (lastUpdatedStr) {
-            updateData.last_updated = lastUpdatedStr;
-        }
 
         await databases.updateDocument(
             APPWRITE_CONFIG.DATABASE_ID,

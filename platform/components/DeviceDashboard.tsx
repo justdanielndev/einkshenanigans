@@ -73,7 +73,7 @@ export default function DeviceDashboard({ device, onDelete, onUpdate }: { device
     const deviceUrl = `${baseUrl}/api/${device.$id}/device.json`;
     const healthUrl = `${baseUrl}/api/${device.$id}/health`;
 
-    const isOnline = device.last_updated && (new Date().getTime() - new Date(device.last_updated).getTime() < 7 * 60 * 1000);
+    const isOnline = device.last_seen && (new Date().getTime() - new Date(device.last_seen).getTime() < 7 * 60 * 1000);
 
     const handleSave = async () => {
         try {
