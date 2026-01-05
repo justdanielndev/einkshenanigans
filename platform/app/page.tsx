@@ -199,7 +199,7 @@ export default function Home() {
 
                     <div className="space-y-2">
                         {devices.map(device => {
-                            const isOnline = device.last_updated && (new Date().getTime() - new Date(device.last_updated).getTime() < 7 * 60 * 1000);
+                            const isOnline = device.last_seen && (new Date().getTime() - new Date(device.last_seen).getTime() < 7 * 60 * 1000);
                             return (
                                 <button
                                     key={device.$id}
