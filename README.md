@@ -1,6 +1,8 @@
-# e-Ink Home
+# openInk
 
-Project to display a custom Home Assistant dashboard on a Waveshare 7.5" E-Ink display. It uses Node.js w/ Puppeteer to capture screenshots of the dashboard and a Python script to update the E-Ink display when changes happen. It's designed to help me a bit with avoiding forgetting to check my tasks and notifications.
+Project to display custom dashboards ("pages") on a Waveshare 7.5" E-Ink display. It uses Node.js w/ Puppeteer to capture screenshots of the dashboard and a Python script to update the E-Ink display when changes happen. It was designed at first to help me a bit with avoiding forgetting to check my tasks and notifications, and now it's just a full on every dashboard :3
+
+When paired with an [openInk Cloud](https://openink.isitzoe.dev) instance (also OSS), you can manage multiple devices and their configurations from a web interface.
 
 ## Architecture
 
@@ -16,14 +18,15 @@ Project to display a custom Home Assistant dashboard on a Waveshare 7.5" E-Ink d
     *   Updates the Waveshare E-Ink display.
     *   Switches between "Fast" and "Standard" refresh modes to avoid ghosting.
 
-3. **e-Ink Platform**:
+3. **openInk Cloud**:
     *   A web-based platform to manage multiple devices and their configurations.
     *   Provides an API endpoint to serve the `device.json` configuration files.
     *   Serves a health check endpoint to monitor device status.
 
 ## Hardware Requirements
 
-*   **Server/Device** to run the screenshot service (e.g., Raspberry Pi, PC). Note that it obviously needs to support the HAT.
+*   **Device** to run the screenshot service (e.g., Raspberry Pi, PC). Note that it obviously needs to support the HAT.
+*.  **Server/Hosting** (optional) if you want to run your own openInk Cloud instance. Not required if you want to use `device.json` or the free official openInk Cloud hosted server.
 *   **Waveshare 7.5inch e-Paper HAT (V2)**
 
 ## Software Requirements
@@ -31,7 +34,7 @@ Project to display a custom Home Assistant dashboard on a Waveshare 7.5" E-Ink d
 *   **Node.js**
 *   **Python 3**
 *   **Chromium installed** (for Puppeteer)
-*   **Home Assistant** instance (not required, you can just use any web page, but the project is optimized for HA of course)
+*   **Home Assistant** instance (not required, you can just use any web page, but some conditions and implementations are Home Assistant specific)
 
 ## Installation
 
@@ -72,23 +75,83 @@ This can now be done via the e-Ink Platform (also OSS), or you can create your o
             "duration": 20
         },
         {
-            "url": "http://homeassistant.local:8123/dashboard-eink/night?kiosk",
-            "starttime": "22:00",
+            "url": "http://homeassistant.local:8123/dashboard-eink/1?kiosk",
+            "duration": 20
+        },
+        {
+            "url": "http://homeassistant.local:8123/dashboard-eink/2?kiosk",
+            "starttime": "20:00",
             "endtime": "06:00"
+        },
+        {
+            "url": "http://homeassistant.local:8123/dashboard-eink/alert?kiosk",
+            "conditions": [
+                {
+                    "type": "if-user-zone",
+                    "user": "person.z",
+                    "zone": "zone.home",
+                    "expected_state": true
+                },
+                {
+                    "type": "day-of-week",
+                    "days": [1, 2, 3, 4, 5],
+                    "expected_state": true
+                }
+            ],
+            "force_show_if_conditions_match": true
         }
     ],
     "randomize_screens": true,
-    "json_refresh_interval": 3
+    "json_refresh_interval": 3,
+    "conditions_check_interval": 5
 }
 ```
 
 *   **screens**: List of URLs to display.
-    *   **duration**: (Optional, needs to be set if not using starttime/endtime) Minutes to display before rotating (default: 20).
-    *   **starttime/endtime**: (Optional, needs to be set if not using duration) Time range (HH:MM) where this screen takes priority over rotation.
+    *   **url**: The dashboard URL to display.
+    *   **duration**: (Optional) Minutes to display before rotating (default: 20).
+    *   **starttime/endtime**: (Optional) Time range (HH:MM) where this screen takes priority over rotation.
+    *   **conditions**: (Optional) Array of conditions that must be met to display this screen.
+        *   **type**: Type of condition. Supported types:
+            *   **if-user-zone**: Checks if a Home Assistant person entity is in a specific zone.
+                *   **user**: Home Assistant person entity ID (e.g., `person.zoe`).
+                *   **zone**: Home Assistant zone entity ID (e.g., `zone.home`).
+                *   **expected_state**: true if the user should be in the zone, false otherwise.
+            *   **day-of-week**: Checks if today is one of the specified days.
+                *   **days**: Array of integers representing days of the week (0 = Sunday, 6 = Saturday).
+                *   **expected_state**: true if today should be in the list, false otherwise.
+    *   **force_show_if_conditions_match**: (Optional) If true, shows only this screen (and others with the same check with their conditions matching too) when all conditions match, overriding normal rotation and time checks.
+        
 *   **randomize_screens**: If true, picks random screens instead of sequential order.
 *   **json_refresh_interval**: Minutes between checking for config updates.
+*   **conditions_check_interval**: Minutes between checking condition states (e.g., user location, day of week).
 
-### 4. Setup Display Service
+### 4. Configuration (openInk Cloud)
+
+You can use the official hosted openInk Cloud at [openink.isitzoe.dev](https://openink.isitzoe.dev) or host your own instance. To host your own, you'll need to:
+
+Open the `platform` directory and install the dependencies:
+```bash
+pnpm install
+```
+
+Create an appwrite project and database, then set up the required collections (Devices, Users, etc.) as per the schema in the `platform` directory.
+
+Create a `.env` file in the `platform` directory with the following content:
+```ini
+NEXT_PUBLIC_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+NEXT_PUBLIC_APPWRITE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_APPWRITE_DATABASE_ID=your_database_id
+NEXT_PUBLIC_APPWRITE_COLLECTION_ID=your_collection_id
+APPWRITE_API_KEY=your_api_key
+```
+
+And finally, run the development server:
+```bash
+pnpm dev
+```
+
+### 5. Setup Display Service
 Install the required Python libraries:
 
 ```bash

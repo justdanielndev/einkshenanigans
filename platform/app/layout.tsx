@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "e-Ink Platform",
-  description: "Manage your e-Ink screens easily.",
+  title: "openInk Cloud (Beta)",
+  description: "Manage your openInk devices easily.",
 };
 
 export default function RootLayout({

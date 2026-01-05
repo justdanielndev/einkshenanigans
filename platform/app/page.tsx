@@ -137,8 +137,11 @@ export default function Home() {
                 <div className="w-full px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-xl font-bold text-zinc-100 tracking-tight">e-Ink Platform</h1>
-                        </div>
+                             <div className="flex items-center gap-2">
+                                 <h1 className="text-xl font-bold text-zinc-100 tracking-tight">openInk Cloud</h1>
+                                 <span className="px-2 py-1 rounded-md text-xs font-medium text-blue-400 border border-blue-500/30 bg-blue-500/5">BETA</span>
+                             </div>
+                         </div>
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col items-end">
                                 <span className="text-xs text-zinc-500">Logged in as</span>
