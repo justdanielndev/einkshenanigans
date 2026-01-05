@@ -36,7 +36,6 @@ async function checkConditions(screen) {
             } else {
                 try {
                     const url = `${HA_BASE_URL}/api/states/${condition.user}`;
-                    console.log(`Checking condition: GET ${url}`);
                     const response = await axios.get(url, {
                         headers: {
                             'Authorization': `Bearer ${HA_ACCESS_TOKEN}`,
@@ -45,7 +44,6 @@ async function checkConditions(screen) {
                     });
                     const state = response.data.state;
                     result = (state === condition.zone);
-                    console.log(`Condition response: state="${state}", expected="${condition.zone}", result=${result}`);
                 } catch (e) {
                     console.error(`Error checking HA condition for ${condition.user}:`, e.message);
                     if (e.response) {
@@ -75,7 +73,6 @@ async function pingHealth() {
             url += `${separator}lastupdated=${encodeURIComponent(lastConfigFetchTime)}`;
         }
         await axios.get(url);
-        console.log('Health ping successful');
     } catch (e) {
         console.error('Health ping failed:', e.message);
     }
@@ -84,11 +81,9 @@ async function pingHealth() {
 async function fetchConfig() {
     if (!JSON_URL) return;
     try {
-        console.log(`Fetching config from ${JSON_URL}...`);
         const response = await axios.get(JSON_URL);
         currentConfig = response.data;
         lastConfigFetchTime = new Date().toISOString();
-        console.log('Config updated:', JSON.stringify(currentConfig, null, 2));
         
         pingHealth();
 
@@ -114,14 +109,12 @@ async function checkLogin(page) {
             const usernameInput = await page.$('input[name="username"]');
             
             if (usernameInput) {
-                console.log('Login page detected. Logging in...');
                 
                 await usernameInput.type(HA_USERNAME);
                 
                 const passwordInput = await page.waitForSelector('input[name="password"]');
                 await passwordInput.type(HA_PASSWORD);
                 
-                console.log('Submitting credentials...');
                 await passwordInput.press('Enter');
                 
                 await page.waitForFunction(() => {
@@ -214,7 +207,6 @@ async function checkScreen(page) {
                          currentScreenIndex = (currentScreenIndex + 1) % normalScreens.length;
                      }
                      lastScreenChangeTime = nowMs;
-                     console.log(`Duration expired. Switching to screen index ${currentScreenIndex}`);
                  }
                  targetScreen = normalScreens[currentScreenIndex];
             }
@@ -257,7 +249,7 @@ async function startCapture() {
     await fetchConfig();
 
     if (!currentConfig) {
-        console.log(`No config found, using fallback: ${FALLBACK_URL}`);
+        console.warn(`No config found, using fallback: ${FALLBACK_URL}`);
         currentUrl = FALLBACK_URL;
         try {
             await page.goto(currentUrl, { waitUntil: 'networkidle2' });
@@ -266,8 +258,6 @@ async function startCapture() {
     } else {
         await checkScreen(page);
     }
-
-    console.log('Starting screenshot loop...');
 
     process.on('SIGINT', async () => {
         console.log('Closing browser...');
@@ -302,7 +292,6 @@ async function startCapture() {
                     const changePercent = numDiffPixels / (width * height);
                     
                     if (changePercent > 0.005) {
-                        console.log(`Change detected: ${(changePercent * 100).toFixed(2)}%. Saving...`);
                         shouldSave = true;
                     }
                 } catch (e) {
@@ -310,7 +299,6 @@ async function startCapture() {
                     shouldSave = true;
                 }
             } else {
-                console.log('First run. Saving...');
                 shouldSave = true;
             }
 
