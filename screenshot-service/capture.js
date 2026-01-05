@@ -18,11 +18,17 @@ let currentConfig = null;
 let currentScreenIndex = 0;
 let lastScreenChangeTime = 0;
 let currentUrl = '';
+let lastConfigFetchTime = null;
 
 async function pingHealth() {
     if (!HEALTH_URL) return;
     try {
-        await axios.get(HEALTH_URL);
+        let url = HEALTH_URL;
+        if (lastConfigFetchTime) {
+            const separator = url.includes('?') ? '&' : '?';
+            url += `${separator}lastupdated=${encodeURIComponent(lastConfigFetchTime)}`;
+        }
+        await axios.get(url);
         console.log('Health ping successful');
     } catch (e) {
         console.error('Health ping failed:', e.message);
@@ -35,6 +41,7 @@ async function fetchConfig() {
         console.log(`Fetching config from ${JSON_URL}...`);
         const response = await axios.get(JSON_URL);
         currentConfig = response.data;
+        lastConfigFetchTime = new Date().toISOString();
         console.log('Config updated:', JSON.stringify(currentConfig, null, 2));
         
         pingHealth();
